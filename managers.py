@@ -37,7 +37,7 @@ class CaptureManager(object):
     @property
     def frame(self):
         if self._enteredFrame and self._frame is None:
-            _, self._frame = self._capture.retrieve()
+            _, self._frame = self._capture.retrieve() # Note we are not supporting the channel variable here... may come up later...
             
             return self._frame
     @property
