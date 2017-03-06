@@ -7,7 +7,7 @@ class Cameo(object):
     ''' Cameo object for the vision framework'''
     def __init__(self):
         self._windowManager = WindowManager('Cameo', self.onKeypress)
-        self._captureManager = CaptureManager(cv2.VideoCapture(1), self._windowManager, True)
+        self._captureManager = CaptureManager(cv2.VideoCapture(0), self._windowManager, True)
 
         self._curves = [None, filters.BGRCrossProcessCurveFilter(), filters.BGRPortraCurveFilter(),
                         filters.BGRProviaCurveFilter(), filters.BGRVelviaCurveFilter()]
@@ -31,6 +31,7 @@ class Cameo(object):
         ''' Run the main loop'''
 
         self._windowManager.createWindow()
+        self._windowManager.setStatus("K={},C={},R={},S={}".format(self._convolutionIndex,self._curveIndex,self._recolorIndex,self._strokeEdges))
         print"Cameo Vision Framework\n"\
              "Tab to start/stop recording\n"\
              "Space to grab a screenshot\n"\
@@ -50,6 +51,8 @@ class Cameo(object):
                 self._recolor(frame, frame)
             if self._strokeEdges:
                 filters.strokeEdges(frame, frame)
+            
+            
 
             self._captureManager.exitFrame()
             self._windowManager.processEvents()
@@ -92,7 +95,8 @@ class Cameo(object):
                 self._strokeEdges = False
             else:
                 self._strokeEdges = True
-
+        statusString="K={},C={},R={},f={}".format(self._convolutionIndex,self._curveIndex,self._recolorIndex,self._strokeEdges)
+        self._windowManager.setStatus(statusString)
 
 
 if __name__ == "__main__":

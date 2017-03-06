@@ -22,6 +22,7 @@ class CaptureManager(object):
         self._framesElapsed = long(0)
         self._fpsEstimate = None
 
+
     @property
     def frame(self):
         ''' returns the current frame'''
@@ -62,13 +63,16 @@ class CaptureManager(object):
             self._fpsEstimate = self._framesElapsed/ timeElapsed
         self._framesElapsed += 1
 
-        # fraw to the window if present
         if self.previewWindowManager is not None:
+            
             if self.shouldMirrorPreview:
-                mirroredFrame = numpy.fliplr(self._frame).copy()
-                self.previewWindowManager.show(mirroredFrame)
+                toShow = numpy.fliplr(self._frame).copy()
+                self.previewWindowManager.show(toShow)
             else:
-                self.previewWindowManager.show(self._frame)
+                toShow = self._frame.copy()
+            self.previewWindowManager.show(toShow)
+            toShow=None
+
 
         if self.isWritingImage:
             cv2.imwrite(self._imageFilename, self._frame)
@@ -77,6 +81,7 @@ class CaptureManager(object):
         if self.isWritingVideo:
             self._writeVideoFrame()
 
+        # fraw to the window if present
         self._frame = None
         self._enteredFrame = False
 
@@ -120,6 +125,7 @@ class WindowManager(object):
 
         self._windowName = windowName
         self._isWindowCreated = False
+        self._statusString=""
 
     @property
     def isWindowCreated(self):
@@ -133,6 +139,7 @@ class WindowManager(object):
 
     def show(self, frame):
         ''' Show the current window'''
+        frame = self._frameStatus(frame,self._statusString)
         cv2.imshow(self._windowName, frame)
 
     def destroyWindow(self):
@@ -147,3 +154,10 @@ class WindowManager(object):
             #Discard any non ascii info
             keycode &= 0xff
             self.keypressCallBack(keycode)
+    def setStatus(self,status):
+        ''' Set the status string'''
+        self._statusString=status
+    def _frameStatus(self,inframe,statusString,color=(0,0,255), thickness=1.3, size=0.5):
+        '''Prints a statusString onto the frame'''
+        if statusString is not None and inframe is not None:
+                return cv2.putText(inframe, statusString, (int(10), int(10)), cv2.FONT_HERSHEY_SIMPLEX, size, color, int(thickness))
