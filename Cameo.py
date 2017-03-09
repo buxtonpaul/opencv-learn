@@ -47,6 +47,11 @@ class Cameo(object):
             self._captureManager.enterFrame()
             frame = self._captureManager.frame
 
+            self._faceTracker.update(frame)
+            faces = self._faceTracker.faces
+
+            rects.swapRects(frame,frame,[face.faceRect for face in faces])
+
             if self._convolution is not None:
                 self._convolution.apply(frame, frame)
             if self._curveFilter is not None:
@@ -56,8 +61,6 @@ class Cameo(object):
             if self._strokeEdges:
                 filters.strokeEdges(frame, frame)
             
-            self._faceTracker.update(frame)
-            faces = self._faceTracker.faces
 
             if self._shouldDrawDebugRects:
                 self._faceTracker.drawDebugRects(frame)
@@ -71,38 +74,48 @@ class Cameo(object):
         tab -> Start stop recording
         excape -> quit
         '''
-        if keycode == 32: # space
+        
+        rawkey = keycode # for handling esc etc
+        keycode = chr(keycode & 255)
+        if rawkey == 0x20: # space
             self._captureManager.writeImage('screenshot.png')
 
-        elif keycode == 9: #tab
+        elif rawkey == 0x09: #tab
             if not self._captureManager.isWritingVideo:
                 self._captureManager.startWritingVideo('screencast.avi')
             else:
                 self._captureManager.stopWritingVideo()
-        elif keycode == 27:  # escape
+        elif rawkey == 0x1b:  # escape
             self._windowManager.destroyWindow()
-        elif chr(keycode & 255) == 'c':
+        
+        elif keycode  in ['c','C']:
             self._curveIndex += 1
             if self._curveIndex >= len(self._curves):
                 self._curveIndex = 0
             self._curveFilter = self._curves[self._curveIndex]
 
-        elif chr(keycode & 255) == 'r':
+        elif keycode in ['r','R']:
             self._recolorIndex += 1
             if self._recolorIndex >= len(self._recolorFilters):
                 self._recolorIndex = 0
             self._recolor = self._recolorFilters[self._recolorIndex]
 
-        elif chr(keycode & 255) == 'k':
+        elif keycode in ['k','K']:
             self._convolutionIndex += 1
             if self._convolutionIndex >= len(self._convolutionFilters):
                 self._convolutionIndex = 0
             self._convolution = self._convolutionFilters[self._convolutionIndex]
-        elif chr(keycode & 255) == 's':
+        elif keycode in ['s','S']:
             if self._strokeEdges:
                 self._strokeEdges = False
             else:
                 self._strokeEdges = True
+        elif keycode in ['x','X']:
+            if self._shouldDrawDebugRects:
+                self._shouldDrawDebugRects = False
+            else:
+                self._shouldDrawDebugRects = True
+
         statusString="K={},C={},R={},f={}".format(self._convolutionIndex,self._curveIndex,self._recolorIndex,self._strokeEdges)
         self._windowManager.setStatus(statusString)
 
