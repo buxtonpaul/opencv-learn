@@ -50,3 +50,12 @@ def createFlatView(array):
     flatView.shape = array.size
     return flatView
 
+def isGray(image):
+    ''' Return true if the image has one channel per pixel'''
+    return image.ndim <3
+
+def widthHeightDividedBy(image, divisor):
+    ''' Return an images dimensions divided by a value'''
+    h, w = image.shape[:2]
+    return (w/divisor, h/divisor)
+

@@ -2,6 +2,8 @@
 import cv2
 from managers import WindowManager, CaptureManager
 import filters
+import rects
+from trackers import FaceTracker
 
 class Cameo(object):
     ''' Cameo object for the vision framework'''
@@ -26,6 +28,8 @@ class Cameo(object):
 
         self._strokeEdges = False
 
+        self._faceTracker = FaceTracker()
+        self._shouldDrawDebugRects = True
 
     def run(self):
         ''' Run the main loop'''
@@ -52,7 +56,11 @@ class Cameo(object):
             if self._strokeEdges:
                 filters.strokeEdges(frame, frame)
             
-            
+            self._faceTracker.update(frame)
+            faces = self._faceTracker.faces
+
+            if self._shouldDrawDebugRects:
+                self._faceTracker.drawDebugRects(frame)
 
             self._captureManager.exitFrame()
             self._windowManager.processEvents()
